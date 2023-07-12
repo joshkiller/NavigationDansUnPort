@@ -10,10 +10,11 @@ model G05NavigationDansUnPort
 
 /* Insert your model definition here */
 
-global { //chargement des fichiers: shapes et images
+global { 
+	//chargement des fichiers: shapes et images
 	file fichier_Qgis <- file("../includes/shapefile.shp");
 	file fichier_couche <- file("../includes/maree.shp");
-	file la_carte <- image_file("../includes/bateau.jpg");
+	file la_carte <- image_file("../includes/bateau_2.png");
 	//file le_sol <- image_file("../includes/sol2.jpg");
 	file la_parabole <- image_file("../includes/parabole.jpg");
 	geometry shape <- envelope(fichier_Qgis);
@@ -24,6 +25,7 @@ global { //chargement des fichiers: shapes et images
 	point entree3 <- {300, 450};
 	point sortie <- {0, 800};
 	int capacite_port <- 15;
+	
 	//les endroits où on va placer les agents espace de stationnement
 	point test <- {150, 280};
 	point test2 <- {280, 280};
@@ -48,15 +50,16 @@ global { //chargement des fichiers: shapes et images
 
 	init {
 		espace_libre <- copy(shape);
+//		Création de la forme du bateau
 		create la_forme from: fichier_Qgis {
 			espace_libre <- espace_libre - (shape + taille_bateau);
 		}
-
+// Création du capteur
 		create capteur_niveau_eau number: 1 {
 			espace_libre <- espace_libre - (shape + taille_bateau);
 			etat_niveau_eau <- etat;
 		}
-
+// Création de bateaux
 		create bateau number: 10 {
 			location <- one_of(entree, entree2, entree3);
 			type_bateau <- one_of(categorie_bateau); //On selectionne au hasard une categorie dans la liste
@@ -95,10 +98,12 @@ global { //chargement des fichiers: shapes et images
 
 		}
 
+// Création de la couche
 		create la_couche from: fichier_couche {
 			espace_libre <- espace_libre - (shape + taille_bateau);
 		}
 
+// Création du centre de controle
 		create centre_de_controle number: 1 {
 			location <- {680, 260};
 		}
@@ -106,11 +111,12 @@ global { //chargement des fichiers: shapes et images
 		loop i from: 0 to: capacite_port - 1 {
 			point element <- emplacement_acostage[i];
 			location <- element;
+			// Point de stationnement
 			create espace_de_stationnement number: 1 {
 				location <- element;
 				surface <- one_of(list(30, 30, 10, 20));
 			}
-
+			// Point de déchargement
 			create bateau_dechargeur number: 3 {
 				location <- element;
 			}
@@ -147,8 +153,10 @@ species la_couche skills: [] {
 		list port_ <- list(capteur_niveau_eau); //Il doit communiquer avec le capteur qui mesure le niveau d'eau
 		ask capteur_niveau_eau {
 			if (etat_niveau_eau = "basse") {
+
 				opacity <- 0.1;
 			} else {
+
 				opacity <- 0.9; // Il devient transparent
 			}
 
@@ -613,25 +621,25 @@ experiment Groupe3navigationport type: gui {
 			species la_forme;
 			species bateau_dechargeur;
 			graphics "sortie" refresh: false {
-//				draw sphere(3) at: entree color: #green;
-//				draw sphere(3) at: sortie color: #green;
-//				draw sphere(3) at: test color: #red;
-//				draw sphere(3) at: test2 color: #red;
-//				draw sphere(3) at: test3 color: #red;
-//				draw sphere(3) at: test4 color: #red;
-//				draw sphere(3) at: test5 color: #red;
-//				draw sphere(3) at: test6 color: #red;
-//				draw sphere(3) at: test7 color: #red;
-//				draw sphere(3) at: test8 color: #red;
-//				draw sphere(3) at: test9 color: #red;
-//				draw sphere(3) at: test10 color: #red;
-//				draw sphere(3) at: test11 color: #red;
-//				draw sphere(3) at: test12 color: #red;
-//				draw sphere(3) at: test13 color: #red;
-//				draw sphere(3) at: test14 color: #red;
-//				draw sphere(3) at: test15 color: #red;
-//				draw sphere(3) at: entree2 color: #red;
-//				draw sphere(3) at: entree3 color: #red;
+				draw sphere(3) at: entree color: #green;
+				draw sphere(3) at: sortie color: #green;
+				draw sphere(3) at: test color: #red;
+				draw sphere(3) at: test2 color: #red;
+				draw sphere(3) at: test3 color: #red;
+				draw sphere(3) at: test4 color: #red;
+				draw sphere(3) at: test5 color: #red;
+				draw sphere(3) at: test6 color: #red;
+				draw sphere(3) at: test7 color: #red;
+				draw sphere(3) at: test8 color: #red;
+				draw sphere(3) at: test9 color: #red;
+				draw sphere(3) at: test10 color: #red;
+				draw sphere(3) at: test11 color: #red;
+				draw sphere(3) at: test12 color: #red;
+				draw sphere(3) at: test13 color: #red;
+				draw sphere(3) at: test14 color: #red;
+				draw sphere(3) at: test15 color: #red;
+				draw sphere(3) at: entree2 color: #red;
+				draw sphere(3) at: entree3 color: #red;
 			}
 
 		}
