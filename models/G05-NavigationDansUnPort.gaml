@@ -622,6 +622,7 @@ experiment Groupe3navigationport type: gui {
 			species bateau_dechargeur;
 			graphics "sortie" refresh: false {
 
+
 			}
 
 		}
