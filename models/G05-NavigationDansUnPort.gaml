@@ -10,10 +10,11 @@ model G05NavigationDansUnPort
 
 /* Insert your model definition here */
 
-global { //chargement des fichiers: shapes et images
+global { 
+	//chargement des fichiers: shapes et images
 	file fichier_Qgis <- file("../includes/shapefile.shp");
 	file fichier_couche <- file("../includes/maree.shp");
-	file la_carte <- image_file("../includes/bateau.jpg");
+	file la_carte <- image_file("../includes/boat.png");
 	//file le_sol <- image_file("../includes/sol2.jpg");
 	file la_parabole <- image_file("../includes/parabole.jpg");
 	geometry shape <- envelope(fichier_Qgis);
@@ -24,6 +25,7 @@ global { //chargement des fichiers: shapes et images
 	point entree3 <- {800, 0};
 	point sortie <- {800, 380};
 	int capacite_port <- 15;
+	
 	//les endroits où on va placer les agents espace de stationnement
 	point dockingPoint <- {180,40};
 	point dockingPoint2 <- {170, 80};
@@ -48,15 +50,16 @@ global { //chargement des fichiers: shapes et images
 
 	init {
 		espace_libre <- copy(shape);
+//		Création de la forme du bateau
 		create la_forme from: fichier_Qgis {
 			espace_libre <- espace_libre - (shape + taille_bateau);
 		}
-
+// Création du capteur
 		create capteur_niveau_eau number: 1 {
 			espace_libre <- espace_libre - (shape + taille_bateau);
 			etat_niveau_eau <- etat;
 		}
-
+// Création de bateaux
 		create bateau number: 10 {
 			location <- one_of(entree, entree2, entree3);
 			type_bateau <- one_of(categorie_bateau); //On selectionne au hasard une categorie dans la liste
@@ -95,10 +98,12 @@ global { //chargement des fichiers: shapes et images
 
 		}
 
+// Création de la couche
 		create la_couche from: fichier_couche {
 			espace_libre <- espace_libre - (shape + taille_bateau);
 		}
 
+// Création du centre de controle
 		create centre_de_controle number: 1 {
 			location <- {680, 260};
 		}
@@ -106,11 +111,12 @@ global { //chargement des fichiers: shapes et images
 		loop i from: 0 to: capacite_port - 1 {
 			point element <- emplacement_acostage[i];
 			location <- element;
+			// Point de stationnement
 			create espace_de_stationnement number: 1 {
 				location <- element;
 				surface <- one_of(list(30, 30, 10, 20));
 			}
-
+			// Point de déchargement
 			create bateau_dechargeur number: 3 {
 				location <- element;
 			}
@@ -147,8 +153,10 @@ species la_couche skills: [] {
 		list port_ <- list(capteur_niveau_eau); //Il doit communiquer avec le capteur qui mesure le niveau d'eau
 		ask capteur_niveau_eau {
 			if (etat_niveau_eau = "basse") {
+
 				opacity <- 0.1;
 			} else {
+
 				opacity <- 0.9; // Il devient transparent
 			}
 
@@ -613,25 +621,7 @@ experiment Groupe3navigationport type: gui {
 			species la_forme;
 			species bateau_dechargeur;
 			graphics "sortie" refresh: false {
-//				draw sphere(3) at: entree color: #green;
-//				draw sphere(3) at: sortie color: #green;
-//				draw sphere(3) at: dockingPoint color: #red;
-//				draw sphere(3) at: dockingPoint2 color: #red;
-//				draw sphere(3) at: dockingPoint3 color: #red;
-//				draw sphere(3) at: dockingPoint4 color: #red;
-//				draw sphere(3) at: dockingPoint5 color: #red;
-//				draw sphere(3) at: dockingPoint6 color: #red;
-//				draw sphere(3) at: dockingPoint7 color: #red;
-//				draw sphere(3) at: dockingPoint8 color: #red;
-//				draw sphere(3) at: dockingPoint9 color: #red;
-//				draw sphere(3) at: dockingPoint10 color: #red;
-//				draw sphere(3) at: dockingPoint11 color: #red;
-//				draw sphere(3) at: dockingPoint12 color: #red;
-//				draw sphere(3) at: dockingPoint13 color: #red;
-//				draw sphere(3) at: dockingPoint14 color: #red;
-//				draw sphere(3) at: dockingPoint15 color: #red;
-//				draw sphere(3) at: entree2 color: #red;
-//				draw sphere(3) at: entree3 color: #red;
+
 			}
 
 		}
