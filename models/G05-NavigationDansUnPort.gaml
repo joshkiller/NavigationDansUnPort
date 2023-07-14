@@ -1,7 +1,7 @@
 /**
 * Name: G05NavigationDansUnPort
 * Based on the internal empty template. 
-* Author: hk
+* Author: ADOSSEHOUN K. JOSUE , ALASSANI Abdoul Saib Gaston, SANDANI Moyéme Jammel.
 * Tags: 
 */
 
@@ -19,15 +19,9 @@ global {
 	file thisSatelliteDish <- image_file("../includes/parabole.jpg");
 	geometry shape <- envelope(fichier_Qgis);
 	geometry espace_libre;
-	float sizeboat <- 2.0;
-	//point entree <- {16, 350};
-	//point entree2 <- {600, 450};
-	//point entree3 <- {300, 450};
-	//point sortie <- {0, 800};
-	point entree <- {16, 350};
-	point entree2 <- {600, 450};
-	point entree3 <- {300, 450};
-	point sortie <- {0, 800};
+
+	float boatSize <- 2.0;
+
 	int portCapacity <- 15;
 	
 	//les endroits où on va placer les agents espace de stationnement
@@ -48,19 +42,20 @@ global {
 	point dockingPoint15 <- {770, 400};
 	float opacity;
 	
-	list<point> emplacement_acostage <- [dockingPoint, dockingPoint2, dockingPoint3, dockingPoint4, dockingPoint5, dockingPoint6, dockingPoint7, dockingPoint8, dockingPoint9, dockingPoint10, dockingPoint11, dockingPoint12, dockingPoint13, dockingPoint14, dockingPoint15];	list<bool> enregistrement_port <- [true, true, true, false]; // Environ 75% true et 25% false
+	list<point> emplacement_acostage <- [dockingPoint, dockingPoint2, dockingPoint3, dockingPoint4, dockingPoint5, dockingPoint6, dockingPoint7, dockingPoint8, dockingPoint9, dockingPoint10, dockingPoint11, dockingPoint12, dockingPoint13, dockingPoint14, dockingPoint15];	
+  list<bool> enregistrement_port <- [true, true, true, false]; // Environ 75% true et 25% false
 	list<string> boatCategory <- ["petit", "moyen", "petit", "grand"]; // Environ 50% petits boatx, 25% petits.B et 25% Grands.B
+
 	string etat <- "basse";
 
 	init {
 		espace_libre <- copy(shape);
 //		Création de la forme du boat
 		create la_forme from: fichier_Qgis {
-			espace_libre <- espace_libre - (shape + sizeboat);
-		}
+
 // Création du capteur
 		create capteur_niveau_eau number: 1 {
-			espace_libre <- espace_libre - (shape + sizeboat);
+			espace_libre <- espace_libre - (shape + boatSize);
 			etat_niveau_eau <- etat;
 		}
 // Création de boatx
@@ -76,6 +71,7 @@ global {
 				couleur <- rgb("green");
 				travelSpeed <- rnd(5.0) + 1.0;
 				portRegisteredStatus <- true;
+
 			}
 
 			if (self.boatType = "moyen") {
@@ -87,6 +83,7 @@ global {
 				couleur <- rgb("blue");
 				travelSpeed <- rnd(5.0) + 1.0;
 				portRegisteredStatus <- one_of(enregistrement_port);
+
 			}
 
 			if (self.boatType = "petit") {
@@ -98,13 +95,15 @@ global {
 				travelSpeed <- rnd(5.0) + 1.0;
 				couleur <- rgb("black");
 				portRegisteredStatus <- one_of(enregistrement_port);
+
 			}
 
 		}
 
 // Création de la couche
 		create la_couche from: fichier_couche {
-			espace_libre <- espace_libre - (shape + sizeboat);
+
+			espace_libre <- espace_libre - (shape + boatSize);
 		}
 
 // Création du centre de controle
@@ -188,6 +187,7 @@ species offloaderBoat skills: [moving] {
 	point boatLoc;
 	bool patienceStatus <- false;
 
+
 	aspect default {
 		draw square(taille) color: couleur;
 	}
@@ -200,6 +200,7 @@ species offloaderBoat skills: [moving] {
 			ask but {
 				unloadingState <- true;
 				myself.freeStatus <- false;
+
 				myself.couleur <- rgb("red");
 				tonnage <- tonnage - unloadingSpeed;
 				if (tonnage > 0) {
@@ -256,6 +257,7 @@ species boat skills: [moving] {
 	point boatDestination;
 	bool patienceStatus <- true;
 	bool returnState <- false;
+
 	int taille;
 	bool waitingState <- false;
 	rgb couleur <- rgb("blue");
@@ -282,6 +284,7 @@ species boat skills: [moving] {
 				if (myself.boatType = "grand" and etat_niveau_eau = "basse") {
 					if (myself.returnState = false) {
 						myself.patienceStatus <- false;
+
 					}
 
 					myself.canReachPort <- false;
@@ -305,6 +308,7 @@ species boat skills: [moving] {
 			ask esp {
 				if (freeStatus = false) {
 					myself.patienceStatus <- false;
+
 					myself.waitingState <- true;
 				}
 
@@ -339,11 +343,13 @@ species boat skills: [moving] {
 			if (listSpaceac != []) {
 				ask plac { //On fait le dechargement du boat
 					myself.patienceStatus <- false;
+
 					myself.tonnage <- myself.tonnage - myself.unloadingSpeed;
 					if (myself.tonnage <= 0) {
 						myself.tonnage <- 0;
 						myself.unloadingState <- false;
 						myself.patienceStatus <- false;
+
 						myself.loadingState <- true;
 					}
 
@@ -364,12 +370,14 @@ species boat skills: [moving] {
 				ask place { //On comment à charger la marchandise dans le boat
 					myself.tonnage <- myself.tonnage + myself.loadingSpeed;
 					if (myself.tonnage >= myself.previousTonnage) //On verifie si le boat est entièrement chargé
+
 					{
 						freeStatus <- true;
 						ma_couleur <- rgb("white");
 						myself.patienceStatus <- true;
 						myself.returnState <- true;
 						myself.boatDestination <- sortie;
+
 						myself.unloadingState <- false;
 					}
 
@@ -388,10 +396,12 @@ species boat skills: [moving] {
 			list listSpaceace <- list(parkingSpace) where (((each distance_to self)) = 0);
 			parkingSpace place <- first(listSpaceace sort_by (self distance_to each));
 			if (listSpaceace != []) { //une fois arrivé, la dite place devient occupée.
+
 				ask place {
 					set freeStatus <- false;
 					set ma_couleur <- rgb('red');
 					set myself.returnState <- true;
+
 					set myself.unloadingState <- true;
 				}
 
@@ -410,6 +420,7 @@ species boat skills: [moving] {
 		int nbMediumSizedBoat <- length(listMediumSizeBoat);
 		if (nbLargeBoat = 1) {
 			create boat number: 1 {
+
 				location <- one_of(entree, entree2, entree3);
 				boatType <- 'grand';
 				tonnage <- rnd(30, 40, 2);
@@ -420,12 +431,14 @@ species boat skills: [moving] {
 				couleur <- rgb("green");
 				travelSpeed <- rnd(5.0) + 1.0;
 				portRegisteredStatus <- true;
+
 			}
 
 		}
 
 		if (nbMediumSizedBoat < 20) {
 			create boat number: 30 {
+
 				location <- one_of(entree, entree2, entree3);
 				boatType <- one_of(list('moyen', 'petit'));
 				if (self.boatType = "moyen") {
@@ -437,6 +450,7 @@ species boat skills: [moving] {
 					couleur <- rgb("blue");
 					travelSpeed <- rnd(5.0) + 1.0;
 					portRegisteredStatus <- one_of(enregistrement_port);
+
 				}
 
 				if (self.boatType = "petit") {
@@ -448,6 +462,7 @@ species boat skills: [moving] {
 					travelSpeed <- rnd(5.0) + 1.0;
 					couleur <- rgb("black");
 					portRegisteredStatus <- one_of(enregistrement_port);
+
 				}
 
 			}
@@ -491,6 +506,7 @@ species controlCenter skills: [] {
 				ask element {
 					checkingState <- true;
 					if (portRegisteredStatus = false) // on verifie si le boat est enregistré
+
 					{
 						boatDestination <- sortie; // on lui dit de rentrer
 					}
@@ -541,6 +557,7 @@ else {
 	//En leur attribuant une nouvelle affectation        	                       
 	reflex coordinateWaitingBoat {
 		list list_bato <- list(boat) where ((each.waitingState = true));
+
 		int nb_b <- length(list_bato);
 		if (list_bato != []) {
 			loop i from: 0 to: nb_b {
@@ -558,6 +575,7 @@ else {
 									myself.boatDestination <- element.location;
 									myself.waitingState <- false;
 									myself.patienceStatus <- true;
+
 								}
 
 							}
@@ -587,6 +605,7 @@ else {
 				boat eleme <- waitBoatList[j];
 				ask eleme {
 					list tmp <- list(offloaderBoat) where ((each.freeStatus = true));
+
 					int nb_ba <- length(tmp);
 					if (tmp != []) {
 						offloaderBoat but <- first(tmp sort_by (self distance_to each));
@@ -594,6 +613,7 @@ else {
 							boatDestination <- eleme.location;
 							boatLoc <- eleme.location;
 							patienceStatus <- true;
+
 						}
 
 					}
@@ -625,6 +645,7 @@ experiment groupe05NavigationDansUnPort type: gui {
 			species la_forme;
 			species offloaderBoat;
 			graphics "sortie" refresh: false {
+      
 			}
 
 		}
