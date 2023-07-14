@@ -14,7 +14,7 @@ global {
 	//chargement des fichiers: shapes et images
 	file fichier_Qgis <- file("../includes/shapefile.shp");
 	file fichier_couche <- file("../includes/maree.shp");
-	file la_carte <- image_file("../includes/bateau_2.png");
+	file la_carte <- image_file("../includes/boat.png");
 	//file le_sol <- image_file("../includes/sol2.jpg");
 	file la_parabole <- image_file("../includes/parabole.jpg");
 	geometry shape <- envelope(fichier_Qgis);
@@ -621,27 +621,6 @@ experiment Groupe3navigationport type: gui {
 			species la_forme;
 			species bateau_dechargeur;
 			graphics "sortie" refresh: false {
-
-//				draw sphere(3) at: entree color: #green;
-//				draw sphere(3) at: sortie color: #green;
-//				draw sphere(3) at: dockingPoint color: #red;
-//				draw sphere(3) at: dockingPoint2 color: #red;
-//				draw sphere(3) at: dockingPoint3 color: #red;
-//				draw sphere(3) at: dockingPoint4 color: #red;
-//				draw sphere(3) at: dockingPoint5 color: #red;
-//				draw sphere(3) at: dockingPoint6 color: #red;
-//				draw sphere(3) at: dockingPoint7 color: #red;
-//				draw sphere(3) at: dockingPoint8 color: #red;
-//				draw sphere(3) at: dockingPoint9 color: #red;
-//				draw sphere(3) at: dockingPoint10 color: #red;
-//				draw sphere(3) at: dockingPoint11 color: #red;
-//				draw sphere(3) at: dockingPoint12 color: #red;
-//				draw sphere(3) at: dockingPoint13 color: #red;
-//				draw sphere(3) at: dockingPoint14 color: #red;
-//				draw sphere(3) at: dockingPoint15 color: #red;
-//				draw sphere(3) at: entree2 color: #red;
-//				draw sphere(3) at: entree3 color: #red;
-
 
 
 			}
