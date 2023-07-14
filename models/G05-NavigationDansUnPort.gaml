@@ -1,7 +1,7 @@
 /**
 * Name: G05NavigationDansUnPort
 * Based on the internal empty template. 
-* Author: hk
+* Author: ADOSSEHOUN K. JOSUE , ALASSANI Abdoul Saib Gaston, SANDANI Moyéme Jammel.
 * Tags: 
 */
 
@@ -19,29 +19,29 @@ global { //chargement des fichiers: shapes et images
 	geometry shape <- envelope(fichier_Qgis);
 	geometry espace_libre;
 	float taille_bateau <- 2.0;
-	point entree <- {16, 350};
-	point entree2 <- {600, 450};
-	point entree3 <- {300, 450};
-	point sortie <- {0, 800};
+	point entree <- {800, 150};
+	point entree2 <- {500,0};
+	point entree3 <- {800, 0};
+	point sortie <- {800, 380};
 	int capacite_port <- 15;
 	//les endroits où on va placer les agents espace de stationnement
-	point test <- {150, 280};
-	point test2 <- {280, 280};
-	point test3 <- {380, 270};
-	point test4 <- {490, 260};
-	point test5 <- {600, 275};
-	point test6 <- {880, 250};
-	point test7 <- {1280, 810};
-	point test8 <- {770, 270};
-	point test9 <- {980, 250};
-	point test10 <- {1130, 350};
-	point test11 <- {1235, 510};
-	point test12 <- {1260, 600};
-	point test13 <- {1200, 390};
-	point test14 <- {1250, 730};
-	point test15 <- {50, 280};
+	point dockingPoint <- {180,40};
+	point dockingPoint2 <- {170, 80};
+	point dockingPoint3 <- {200, 150};
+	point dockingPoint4 <- {173, 190};
+	point dockingPoint5 <- {200, 230};
+	point dockingPoint6 <- {205, 280};
+	point dockingPoint7 <- {240, 302};
+	point dockingPoint8 <- {280, 320};
+	point dockingPoint9 <- {305, 355};
+	point dockingPoint10 <- {350, 385};
+	point dockingPoint11 <- {410, 390};
+	point dockingPoint12 <- {500, 390};
+	point dockingPoint13 <- {590, 395};
+	point dockingPoint14 <- {680, 395};
+	point dockingPoint15 <- {770, 400};
 	float opacity;
-	list<point> emplacement_acostage <- [test, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, test13, test14, test15];
+	list<point> emplacement_acostage <- [dockingPoint, dockingPoint2, dockingPoint3, dockingPoint4, dockingPoint5, dockingPoint6, dockingPoint7, dockingPoint8, dockingPoint9, dockingPoint10, dockingPoint11, dockingPoint12, dockingPoint13, dockingPoint14, dockingPoint15];
 	list<bool> enregistrement_port <- [true, true, true, false]; // Environ 75% true et 25% false
 	list<string> categorie_bateau <- ["petit", "moyen", "petit", "grand"]; // Environ 50% petits bateaux, 25% petits.B et 25% Grands.B
 	string etat <- "basse";
@@ -615,21 +615,21 @@ experiment Groupe3navigationport type: gui {
 			graphics "sortie" refresh: false {
 //				draw sphere(3) at: entree color: #green;
 //				draw sphere(3) at: sortie color: #green;
-//				draw sphere(3) at: test color: #red;
-//				draw sphere(3) at: test2 color: #red;
-//				draw sphere(3) at: test3 color: #red;
-//				draw sphere(3) at: test4 color: #red;
-//				draw sphere(3) at: test5 color: #red;
-//				draw sphere(3) at: test6 color: #red;
-//				draw sphere(3) at: test7 color: #red;
-//				draw sphere(3) at: test8 color: #red;
-//				draw sphere(3) at: test9 color: #red;
-//				draw sphere(3) at: test10 color: #red;
-//				draw sphere(3) at: test11 color: #red;
-//				draw sphere(3) at: test12 color: #red;
-//				draw sphere(3) at: test13 color: #red;
-//				draw sphere(3) at: test14 color: #red;
-//				draw sphere(3) at: test15 color: #red;
+//				draw sphere(3) at: dockingPoint color: #red;
+//				draw sphere(3) at: dockingPoint2 color: #red;
+//				draw sphere(3) at: dockingPoint3 color: #red;
+//				draw sphere(3) at: dockingPoint4 color: #red;
+//				draw sphere(3) at: dockingPoint5 color: #red;
+//				draw sphere(3) at: dockingPoint6 color: #red;
+//				draw sphere(3) at: dockingPoint7 color: #red;
+//				draw sphere(3) at: dockingPoint8 color: #red;
+//				draw sphere(3) at: dockingPoint9 color: #red;
+//				draw sphere(3) at: dockingPoint10 color: #red;
+//				draw sphere(3) at: dockingPoint11 color: #red;
+//				draw sphere(3) at: dockingPoint12 color: #red;
+//				draw sphere(3) at: dockingPoint13 color: #red;
+//				draw sphere(3) at: dockingPoint14 color: #red;
+//				draw sphere(3) at: dockingPoint15 color: #red;
 //				draw sphere(3) at: entree2 color: #red;
 //				draw sphere(3) at: entree3 color: #red;
 			}
