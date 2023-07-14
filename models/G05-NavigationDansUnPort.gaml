@@ -604,7 +604,7 @@ else {
 
 }
 
-experiment Groupe3navigationport type: gui {
+experiment groupe05NavigationDansUnPort type: gui {
 	parameter "Changer le niveau de la marrée" category: "Niveau d'eau" var: etat <- "basse" among: ["basse", "haute"];
 	float minimum_cycle_duration <- 0.04;
 	output {
