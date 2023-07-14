@@ -15,8 +15,8 @@ global {
 	file fichier_Qgis <- file("../includes/shapefile.shp");
 	file fichier_couche <- file("../includes/maree.shp");
 	file la_carte <- image_file("../includes/boat.png");
-	//file le_sol <- image_file("../includes/sol2.jpg");
-	file la_parabole <- image_file("../includes/parabole.jpg");
+	file le_sol <- image_file("../includes/le_sol.jpeg");
+	file la_parabole <- image_file("../includes/parabole.jpeg");
 	geometry shape <- envelope(fichier_Qgis);
 	geometry espace_libre;
 	float taille_bateau <- 2.0;
@@ -52,7 +52,7 @@ global {
 		espace_libre <- copy(shape);
 //		Création de la forme du bateau
 		create la_forme from: fichier_Qgis {
-			espace_libre <- espace_libre - (shape + taille_bateau);
+			//espace_libre <- espace_libre - (shape + taille_bateau);
 		}
 // Création du capteur
 		create capteur_niveau_eau number: 1 {
@@ -130,11 +130,13 @@ global {
 //Cet agent représente la partie terrestre de notre environnement, c'est un shape file 
 species la_forme {
 	float height <- 1.0;
-
+    
 	aspect default {
+		
+		
 		draw shape color: #grey depth: height;
 		//draw le_sol  ;
-		//image "../includes/sol2.jpg";
+		image "../includes/sol2.jpg";
 		
 		//draw la_carte size: taille * 2;
 	}
