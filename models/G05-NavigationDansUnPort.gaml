@@ -11,20 +11,20 @@ model G05NavigationDansUnPort
 /* Insert your model definition here */
 
 global { 
-	//chargement des fichiers: shapes et images
-	file fichier_Qgis <- file("../includes/shapefile.shp");
-	file fichier_couche <- file("../includes/maree.shp");
-	file la_carte <- image_file("../includes/boat.png");
+	//loading des fichiers: shapes et images
+	file qgisFile <- file("../includes/shapefile.shp");
+	file layerFile <- file("../includes/maree.shp");
+	file card <- image_file("../includes/boat.png");
 	//file le_sol <- image_file("../includes/sol2.jpg");
-	file la_parabole <- image_file("../includes/parabole.jpg");
-	geometry shape <- envelope(fichier_Qgis);
-	geometry espace_libre;
+	file satelliteDish <- image_file("../includes/parabole.jpg");
+	geometry shape <- envelope(qgisFile);
+	geometry freeSpace;
 	float boatSize <- 2.0;
-	point entree <- {16, 350};
-	point entree2 <- {600, 450};
-	point entree3 <- {300, 450};
-	point sortie <- {0, 800};
-	int capacite_port <- 15;
+	point entryPoint <- {800, 150};
+	point entryPoint2 <- {500,0};
+	point entryPoint3 <- {800, 0};
+	point out <- {800, 380};
+	int portCapacity <- 15;
 	
 	//les endroits où on va placer les agents espace de stationnement
 	point dockingPoint <- {180,40};
@@ -43,33 +43,33 @@ global {
 	point dockingPoint14 <- {680, 395};
 	point dockingPoint15 <- {770, 400};
 	float opacity;
-	list<point> emplacement_acostage <- [dockingPoint, dockingPoint2, dockingPoint3, dockingPoint4, dockingPoint5, dockingPoint6, dockingPoint7, dockingPoint8, dockingPoint9, dockingPoint10, dockingPoint11, dockingPoint12, dockingPoint13, dockingPoint14, dockingPoint15];
-	list<bool> enregistrement_port <- [true, true, true, false]; // Environ 75% true et 25% false
+	list<point> allDockingPoint <- [dockingPoint, dockingPoint2, dockingPoint3, dockingPoint4, dockingPoint5, dockingPoint6, dockingPoint7, dockingPoint8, dockingPoint9, dockingPoint10, dockingPoint11, dockingPoint12, dockingPoint13, dockingPoint14, dockingPoint15];
+	list<bool> portRegistered <- [true, true, true, false]; // Environ 75% true et 25% false
 	list<string> boatCategory <- ["petit", "moyen", "petit", "grand"]; // Environ 50% petits bateaux, 25% petits.B et 25% Grands.B
-	string etat <- "basse";
+	string status <- "basse";
 
 	init {
-		espace_libre <- copy(shape);
+		freeSpace <- copy(shape);
 //		Création de la forme du bateau
-		create la_forme from: fichier_Qgis {
-			espace_libre <- espace_libre - (shape + boatSize);
+		create boatShape from: qgisFile {
+			freeSpace <- freeSpace - (shape + boatSize);
 		}
 // Création du capteur
-		create capteur_niveau_eau number: 1 {
-			espace_libre <- espace_libre - (shape + boatSize);
-			etat_niveau_eau <- etat;
+		create waterLevelSensor number: 1 {
+			freeSpace <- freeSpace - (shape + boatSize);
+			waterLevelStatus <- status;
 		}
 // Création de bateaux
-		create bateau number: 10 {
-			location <- one_of(entree, entree2, entree3);
+		create boat number: 10 {
+			location <- one_of(entryPoint, entryPoint2, entryPoint3);
 			boatType <- one_of(boatCategory); //On selectionne au hasard une categorie dans la liste
 			if (self.boatType = "grand") {
 				tonnage <- rnd(30, 40, 2); //La valeur min 50,max 60 et le pas c'est 2
 				previousTonnage <- tonnage;
 				loadingSpeed <- 3;
 				unloadingSpeed <- 4;
-				taille <- 30;
-				couleur <- rgb("green");
+				size <- 30;
+				color <- rgb("green");
 				travelSpeed <- rnd(5.0) + 1.0;
 				portRegistrationStatus <- true;
 			}
@@ -79,10 +79,10 @@ global {
 				previousTonnage <- tonnage;
 				loadingSpeed <- 2;
 				unloadingSpeed <- 2;
-				taille <- 20;
-				couleur <- rgb("blue");
+				size <- 20;
+				color <- rgb("blue");
 				travelSpeed <- rnd(5.0) + 1.0;
-				portRegistrationStatus <- one_of(enregistrement_port);
+				portRegistrationStatus <- one_of(portRegistered);
 			}
 
 			if (self.boatType = "petit") {
@@ -90,33 +90,33 @@ global {
 				previousTonnage <- tonnage;
 				loadingSpeed <- 1;
 				unloadingSpeed <- 1;
-				taille <- 10;
+				size <- 10;
 				travelSpeed <- rnd(5.0) + 1.0;
-				couleur <- rgb("black");
-				portRegistrationStatus <- one_of(enregistrement_port);
+				color <- rgb("black");
+				portRegistrationStatus <- one_of(portRegistered);
 			}
 
 		}
 
 // Création de la couche
-		create la_couche from: fichier_couche {
-			espace_libre <- espace_libre - (shape + boatSize);
+		create layer from: layerFile {
+			freeSpace <- freeSpace - (shape + boatSize);
 		}
 
 // Création du centre de controle
-		create centre_de_controle number: 1 {
+		create controlCenter number: 1 {
 			location <- {680, 260};
 		}
 		//On crée un agent espace de stationnement sur chaque place d'acostage
-		loop i from: 0 to: capacite_port - 1 {
-			point element <- emplacement_acostage[i];
+		loop i from: 0 to: portCapacity - 1 {
+			point element <- allDockingPoint[i];
 			location <- element;
 			// Point de stationnement
-			create espace_de_stationnement number: 1 {
+			create parkingSpace number: 1 {
 				location <- element;
-				surface <- one_of(list(30, 30, 10, 20));
+				area <- one_of(list(30, 30, 10, 20));
 			}
-			// Point de déchargement
+			// Point de déloading
 			create offloaderBoat number: 3 {
 				location <- element;
 			}
@@ -128,7 +128,7 @@ global {
 }
 
 //Cet agent représente la partie terrestre de notre environnement, c'est un shape file 
-species la_forme {
+species boatShape {
 	float height <- 1.0;
 
 	aspect default {
@@ -136,23 +136,23 @@ species la_forme {
 		//draw le_sol  ;
 		//image "../includes/sol2.jpg";
 		
-		//draw la_carte size: taille * 2;
+		//draw card size: size * 2;
 	}
 
 }
 
 //Cette agent représente la couche de l'eau qui peut avoir le niveau haut ou bas  
-species la_couche skills: [] {
+species layer skills: [] {
 	float height <- 0.0;
 
 	aspect default {
 		draw shape color: #blue depth: height;
 	}
 
-	reflex changer_niveau_eau {
-		list port_ <- list(capteur_niveau_eau); //Il doit communiquer avec le capteur qui mesure le niveau d'eau
-		ask capteur_niveau_eau {
-			if (etat_niveau_eau = "basse") {
+	reflex changeWaterLevel {
+		list port_ <- list(waterLevelSensor); //Il doit communiquer avec le capteur qui mesure le niveau d'eau
+		ask waterLevelSensor {
+			if (waterLevelStatus = "basse") {
 
 				opacity <- 0.1;
 			} else {
@@ -167,9 +167,9 @@ species la_couche skills: [] {
 }
 
 //cet agent mesure le niveau d'eau (de la marée)
-species capteur_niveau_eau {
+species waterLevelSensor {
 	float height <- 0.0;
-	string etat_niveau_eau; //Il prend une valeur au hasard dans la liste, donc si on souhaite 
+	string waterLevelStatus; //Il prend une valeur au hasard dans la liste, donc si on souhaite 
 	//qu'il prenne un autre élément de la liste, 
 } //Il faut recompiler.
 
@@ -177,38 +177,38 @@ species capteur_niveau_eau {
 //Cet agent représente les bateaux qui auront comme mission de charger et decharger les grands bateau qui ne pourront pas acceder
 //au port, cette situation sera possible quand le niveau de la marée sera basse.    
 species offloaderBoat skills: [moving] {
-	point sa_destination;
-	rgb couleur <- rgb("white");
-	int taille <- 10;
-	bool etat_disponible <- true;
-	point boatLoc;
-	bool etat_marcher <- false;
+	point isDestination;
+	rgb color <- rgb("white");
+	int size <- 10;
+	bool freeStatus <- true;
+	point boatLocation;
+	bool walkingStatus <- false;
 
 	aspect default {
-		draw square(taille) color: couleur;
+		draw square(size) color: color;
 	}
 
 	//Cette action sera executée sous l'ordre de l'agent centre de controle, c'est lui qui coordonne tous les trafics.
 	reflex RescueLargeBoats {
-		list tmp <- list(bateau) where ((each.boatType = 'grand') and ((each distance_to self) < 5) and (each.canReachPort = false));
-		bateau but <- first(tmp sort_by (self distance_to each));
+		list tmp <- list(boat) where ((each.boatType = 'grand') and ((each distance_to self) < 5) and (each.canReachPort = false));
+		boat but <- first(tmp sort_by (self distance_to each));
 		if (tmp != []) {
 			ask but {
 				unloadingState <- true;
-				myself.etat_disponible <- false;
-				myself.couleur <- rgb("red");
+				myself.freeStatus <- false;
+				myself.color <- rgb("red");
 				tonnage <- tonnage - unloadingSpeed;
 				if (tonnage > 0) {
-					myself.sa_destination <- sa_destination;
+					myself.isDestination <- isDestination;
 				}
 
 				if (tonnage <= 0) {
-					myself.sa_destination <- sa_destination;
-					myself.etat_disponible <- true;
-					myself.couleur <- rgb("white");
-					etat_retour <- true;
-					etat_marcher <- true;
-					sa_destination <- sortie;
+					myself.isDestination <- isDestination;
+					myself.freeStatus <- true;
+					myself.color <- rgb("white");
+					returnStatus <- true;
+					walkingStatus <- true;
+					isDestination <- out;
 				}
 
 			}
@@ -217,21 +217,21 @@ species offloaderBoat skills: [moving] {
 
 	}
 
-	reflex se_deplacer_vers_son_but {
-		if (etat_marcher = true) {
-			do action: goto target: sa_destination speed: 10.0;
+	reflex moveToGoal {
+		if (walkingStatus = true) {
+			do action: goto target: isDestination speed: 10.0;
 		}
 
 	}
 
-	reflex retour_au_port {
-	//C'est cette action qui va permettre à l'agent de faire le va et vient pendant le dechagement/chargement
+	reflex returnToPort {
+	//C'est cette action qui va permettre à l'agent de faire le va et vient pendant le dechagement/loading
 	//Donc il se rapproche du bateau, il recupere la marchandise, puis il se dirige vers le port où le bateau devrait accoster.
-		if (etat_disponible = false) {
-			list tmpt <- list(espace_de_stationnement) where ((each distance_to self) <= 0);
+		if (freeStatus = false) {
+			list tmpt <- list(parkingSpace) where ((each distance_to self) <= 0);
 			int nb_ <- length(tmpt);
 			if (tmpt != []) {
-				sa_destination <- boatLoc;
+				isDestination <- boatLocation;
 			}
 
 		}
@@ -241,7 +241,7 @@ species offloaderBoat skills: [moving] {
 }
 
 //Cette agent représente le bateau 
-species bateau skills: [moving] {
+species boat skills: [moving] {
 	int tonnage;
 	float travelSpeed;
 	int loadingSpeed;
@@ -249,35 +249,35 @@ species bateau skills: [moving] {
 	string boatType <- "";
 	bool portRegistrationStatus;
 	int rayPerception <- 10;
-	point sa_destination;
-	bool etat_marcher <- true;
-	bool etat_retour <- false;
-	int taille;
+	point isDestination;
+	bool walkingStatus <- true;
+	bool returnStatus <- false;
+	int size;
 	bool waitingState <- false;
-	rgb couleur <- rgb("blue");
+	rgb color <- rgb("blue");
 	bool canReachPort <- true;
 	bool unloadingState <- false;
 	bool loadingState <- false;
 	int previousTonnage;
-	int comptage <- 300;
+	int counting <- 300;
 	bool checkingState <- false;
 
 	//On lui donne une icone qui contient l'image d'une photo
 	aspect icone {
-		draw la_carte size: taille * 2;
+		draw card size: size * 2;
 	}
 
-	reflex verifier_etat_maree
+	reflex checkTideStatus
 	//A chaque moment qu'il se deplace, il verifie le niveau de la marée, si celui-ci ne lui convient pas, il communique 
 	//avec le centre de controle pour qu'on puisse lui envoyé un bateau de secours etant donné qu'il ne peut pas atteindre le port.
 	//Cette action ne concerne que les grands bateaux.
 	{
-		list proche_de <- list(la_couche) where (((each distance_to self)) <= 10); //S'il est proche de la dite couche  
-		if (proche_de != []) {
-			ask capteur_niveau_eau {
-				if (myself.boatType = "grand" and etat_niveau_eau = "basse") {
-					if (myself.etat_retour = false) {
-						myself.etat_marcher <- false;
+		list pocketOf <- list(layer) where (((each distance_to self)) <= 10); //S'il est proche de la dite couche  
+		if (pocketOf != []) {
+			ask waterLevelSensor {
+				if (myself.boatType = "grand" and waterLevelStatus = "basse") {
+					if (myself.returnStatus = false) {
+						myself.walkingStatus <- false;
 					}
 
 					myself.canReachPort <- false;
@@ -293,14 +293,14 @@ species bateau skills: [moving] {
 	//cette situation peut arriver etant donné que la vitesse des bateaux est donnée aleatoirement, donc certains seront plus
 	//rapides que les autres. Dans ce cas, le bateau va communiquer avec le centre de controle pour qu'on lui donne une autre
 	//affectation pour pouvoir accoster. Il sera d'abord en attente pendant ce processus.
-	reflex rester_en_attente when: etat_retour = false {
-		list espac <- list(espace_de_stationnement) where (((each distance_to self)) <= 90);
-		int nb_espac <- length(espac);
-		espace_de_stationnement esp <- first(espac sort_by (self distance_to each));
+	reflex stayOnWait when: returnStatus = false {
+		list espac <- list(parkingSpace) where (((each distance_to self)) <= 90);
+		int spaceNomber <- length(espac);
+		parkingSpace esp <- first(espac sort_by (self distance_to each));
 		if (espac != []) {
 			ask esp {
-				if (etat_disponible = false) {
-					myself.etat_marcher <- false;
+				if (freeStatus = false) {
+					myself.walkingStatus <- false;
 					myself.waitingState <- true;
 				}
 
@@ -311,35 +311,35 @@ species bateau skills: [moving] {
 	}
 
 	//Quand l'agent termine sa mission, il quitte le port
-	reflex retourner {
+	reflex returning {
 	// 
-		if (etat_retour = true and etat_marcher = true) {
-			self.sa_destination <- sortie;
-			etat_marcher <- true;
+		if (returnStatus = true and walkingStatus = true) {
+			self.isDestination <- out;
+			walkingStatus <- true;
 		}
 
 	}
 	//Quand l'agent quitte completement le port, on le tue         
-	reflex tuer_agent { //Si l'agent arrive au point de sortie, on le tue
-		if (self distance_to sortie = 0) {
+	reflex agentKiller { //Si l'agent arrive au point de out, on le tue
+		if (self distance_to out = 0) {
 			do die;
 		}
 
 	}
 
-	reflex dechargement {
+	reflex unloading {
 		if (unloadingState = true and canReachPort = true) { //On se rapproche du port, pour pouvoir decharger la marchandise
-			list list_espac <- list(espace_de_stationnement) where (((each distance_to self)) = 0);
-			int nb_espac <- length(list_espac);
-			espace_de_stationnement plac <- first(list_espac sort_by (self distance_to each));
-			if (list_espac != []) {
-				ask plac { //On fait le dechargement du bateau
-					myself.etat_marcher <- false;
+			list spaceList <- list(parkingSpace) where (((each distance_to self)) = 0);
+			int spaceNomber <- length(spaceList);
+			parkingSpace plac <- first(spaceList sort_by (self distance_to each));
+			if (spaceList != []) {
+				ask plac { //On fait le unloading du bateau
+					myself.walkingStatus <- false;
 					myself.tonnage <- myself.tonnage - myself.unloadingSpeed;
 					if (myself.tonnage <= 0) {
 						myself.tonnage <- 0;
 						myself.unloadingState <- false;
-						myself.etat_marcher <- false;
+						myself.walkingStatus <- false;
 						myself.loadingState <- true;
 					}
 
@@ -351,21 +351,21 @@ species bateau skills: [moving] {
 
 	}
 
-	reflex chargement {
+	reflex loading {
 		if (loadingState = true) { //On se rassure que on a bien accoster
-			list list_esp <- list(espace_de_stationnement) where (((each distance_to self)) < 5);
-			int nb_esp <- length(list_esp);
-			espace_de_stationnement place <- first(list_esp sort_by (self distance_to each));
-			if (list_esp != []) {
+			list spaceList <- list(parkingSpace) where (((each distance_to self)) < 5);
+			int spaceNomber <- length(spaceList);
+			parkingSpace place <- first(spaceList sort_by (self distance_to each));
+			if (spaceList != []) {
 				ask place { //On comment à charger la marchandise dans le bateau
 					myself.tonnage <- myself.tonnage + myself.loadingSpeed;
 					if (myself.tonnage >= myself.previousTonnage) //On verifie si le bateau est entièrement chargé
 					{
-						etat_disponible <- true;
-						ma_couleur <- rgb("white");
-						myself.etat_marcher <- true;
-						myself.etat_retour <- true;
-						myself.sa_destination <- sortie;
+						freeStatus <- true;
+						col <- rgb("white");
+						myself.walkingStatus <- true;
+						myself.returnStatus <- true;
+						myself.isDestination <- out;
 						myself.unloadingState <- false;
 					}
 
@@ -378,16 +378,16 @@ species bateau skills: [moving] {
 	}
 
 	//Cette action est executée quand le bateau recoit l'ordre venant du centre de controle lui indiquant la place d'acostage.     
-	reflex aller_place_accostage when: (etat_marcher = true) {
-		do action: goto target: sa_destination speed: travelSpeed;
-		if (etat_retour = false) {
-			list list_espace <- list(espace_de_stationnement) where (((each distance_to self)) = 0);
-			espace_de_stationnement place <- first(list_espace sort_by (self distance_to each));
-			if (list_espace != []) { //une fois arrivé, la dite place devient occupée.
+	reflex moveToAcostage when: (walkingStatus = true) {
+		do action: goto target: isDestination speed: travelSpeed;
+		if (returnStatus = false) {
+			list spaceListe <- list(parkingSpace) where (((each distance_to self)) = 0);
+			parkingSpace place <- first(spaceListe sort_by (self distance_to each));
+			if (spaceListe != []) { //une fois arrivé, la dite place devient occupée.
 				ask place {
-					set etat_disponible <- false;
-					set ma_couleur <- rgb('red');
-					set myself.etat_retour <- true;
+					set freeStatus <- false;
+					set col <- rgb('red');
+					set myself.returnStatus <- true;
 					set myself.unloadingState <- true;
 				}
 
@@ -399,40 +399,40 @@ species bateau skills: [moving] {
 
 	//ce reflex  permet de créer les agents progressivement afin que le programme ne puisse avoir une carence à un moment
 	//donné.              
-	reflex creer_progressivement_les_agents {
-		list largeBoatsList <- list(bateau) where ((each.boatType = 'grand'));
-		int nbLargeBoat <- length(largeBoatsList);
-		list listMediumSizeBoat <- list(bateau);
-		int nbMediumSizedBoat <- length(listMediumSizeBoat);
-		if (nbLargeBoat = 1) {
-			create bateau number: 1 {
-				location <- one_of(entree, entree2, entree3);
+	reflex createAgentsProgressively {
+		list largeBoatList <- list(boat) where ((each.boatType = 'grand'));
+		int lorgeBoatNomber <- length(largeBoatList);
+		list mediumBoatList <- list(boat);
+		int mediumBoatList <- length(mediumBoatList);
+		if (lorgeBoatNomber = 1) {
+			create boat number: 1 {
+				location <- one_of(entryPoint, entryPoint2, entryPoint3);
 				boatType <- 'grand';
 				tonnage <- rnd(30, 40, 2);
 				previousTonnage <- tonnage;
 				loadingSpeed <- 3;
 				unloadingSpeed <- 4;
-				taille <- 30;
-				couleur <- rgb("green");
+				size <- 30;
+				color <- rgb("green");
 				travelSpeed <- rnd(5.0) + 1.0;
 				portRegistrationStatus <- true;
 			}
 
 		}
 
-		if (nbMediumSizedBoat < 20) {
-			create bateau number: 30 {
-				location <- one_of(entree, entree2, entree3);
+		if (mediumBoatList < 20) {
+			create boat number: 30 {
+				location <- one_of(entryPoint, entryPoint2, entryPoint3);
 				boatType <- one_of(list('moyen', 'petit'));
 				if (self.boatType = "moyen") {
 					tonnage <- rnd(20, 30, 2);
 					previousTonnage <- tonnage;
 					loadingSpeed <- 2;
 					unloadingSpeed <- 2;
-					taille <- 20;
-					couleur <- rgb("blue");
+					size <- 20;
+					color <- rgb("blue");
 					travelSpeed <- rnd(5.0) + 1.0;
-					portRegistrationStatus <- one_of(enregistrement_port);
+					portRegistrationStatus <- one_of(portRegistered);
 				}
 
 				if (self.boatType = "petit") {
@@ -440,10 +440,10 @@ species bateau skills: [moving] {
 					previousTonnage <- tonnage;
 					loadingSpeed <- 1;
 					unloadingSpeed <- 1;
-					taille <- 10;
+					size <- 10;
 					travelSpeed <- rnd(5.0) + 1.0;
-					couleur <- rgb("black");
-					portRegistrationStatus <- one_of(enregistrement_port);
+					color <- rgb("black");
+					portRegistrationStatus <- one_of(portRegistered);
 				}
 
 			}
@@ -455,59 +455,59 @@ species bateau skills: [moving] {
 }
 
 //Cet agent représente les places sur lesquelles les bateaux doivent s'accoster  
-species espace_de_stationnement skills: [] {
-	int surface;
-	rgb ma_couleur <- rgb("khaki");
-	int taille;
-	bool etat_disponible <- true;
+species parkingSpace skills: [] {
+	int area;
+	rgb col <- rgb("khaki");
+	int size;
+	bool freeStatus <- true;
 
 	aspect default {
-		draw circle(surface / 2) color: ma_couleur;
+		draw circle(area / 2) color: col;
 	}
 
 }
 
-species centre_de_controle skills: [] {
-	int taille_ <- 10;
-	rgb couleur_ <- rgb("yellow");
+species controlCenter skills: [] {
+	int size_ <- 10;
+	rgb color_ <- rgb("yellow");
 
 	aspect parabole {
-		draw la_parabole size: taille_ * 5;
+		draw satelliteDish size: size_ * 5;
 	}
 
-	reflex acostagePermitsToBoats {
+	reflex boatLiftingAuthorizations {
 	//On communique avec les bateaux par Radio, donc on  a pas besoin d'un rayon de perception.
-		list boatList <- list(bateau) where ((each.etat_retour = false) and (each.checkingState = false));
-		int boatNumber <- length(boatList);
+		list boatList <- list(boat) where ((each.returnStatus = false) and (each.checkingState = false));
+		int boatNomberteau <- length(boatList);
 		if (boatList != []) {
 		//On communique avec chaque bateau pour pouvoir recuperer les informormations 
-			loop i from: 0 to: boatNumber {
-				int j <- rnd(boatNumber - 1);
-				bateau element <- boatList[j];
+			loop i from: 0 to: boatNomberteau {
+				int j <- rnd(boatNomberteau - 1);
+				boat element <- boatList[j];
 				ask element {
 					checkingState <- true;
 					if (portRegistrationStatus = false) // on verifie si le bateau est enregistré
 					{
-						sa_destination <- sortie; // on lui dit de rentrer
+						isDestination <- out; // on lui dit de rentrer
 					}
 					//S'il est enregistré              
 else {
 					//on verifie le nombre des places disponibles
-						list list_esp <- list(espace_de_stationnement) where ((each.etat_disponible = true));
-						int nb_esp <- length(list_esp);
-						if (nb_esp > 0) {
+						list spaceList <- list(parkingSpace) where ((each.freeStatus = true));
+						int spaceNomber <- length(spaceList);
+						if (spaceNomber > 0) {
 						//On récupère toutes les places disponibles
-							list espace_dispo <- list(espace_de_stationnement) where ((each.etat_disponible = true));
-							int nb_espace <- length(espace_dispo);
-							if (espace_dispo != []) {
-								loop i from: 0 to: nb_espace {
-									int j <- rnd(nb_espace - 1);
-									espace_de_stationnement element <- espace_dispo[j];
+							list freeSpace <- list(parkingSpace) where ((each.freeStatus = true));
+							int spaceNombere <- length(freeSpace);
+							if (freeSpace != []) {
+								loop i from: 0 to: spaceNombere {
+									int j <- rnd(spaceNombere - 1);
+									parkingSpace element <- freeSpace[j];
 									ask element {
-									//On cherche l"espace qui correspond à la taille du bateau 	
-										if (surface >= myself.taille) {
+									//On cherche l"espace qui correspond à la size du bateau 	
+										if (area >= myself.size) {
 										//Si on le trouve, directement on l'affecte au bateau
-											myself.sa_destination <- element.location;
+											myself.isDestination <- element.location;
 											//Ici on autorise maintenant le bateau à pouvoir accoster
 											//Donc il peut  se diriger vers le port etant donné qu'il a déjà
 											//une affectation 
@@ -520,7 +520,7 @@ else {
 							}
 
 						} else {
-							set etat_marcher <- false; //On lui dit de patienter car il n'y a pas d'espace
+							set walkingStatus <- false; //On lui dit de patienter car il n'y a pas d'espace
 						}
 
 					}
@@ -536,24 +536,24 @@ else {
 	//Cette action gère tous les bateaux qui sont en attente, donc tous ceux qui n'ont pas pu accoster
 	//En leur attribuant une nouvelle affectation        	                       
 	reflex coordinateWaitingBoat {
-		list list_bato <- list(bateau) where ((each.waitingState = true));
-		int nb_b <- length(list_bato);
-		if (list_bato != []) {
+		list boatList <- list(boat) where ((each.waitingState = true));
+		int nb_b <- length(boatList);
+		if (boatList != []) {
 			loop i from: 0 to: nb_b {
 				int j <- rnd(nb_b - 1);
-				bateau element <- list_bato[j];
+				boat element <- boatList[j];
 				ask element {
-					list espace_dispo <- list(espace_de_stationnement) where ((each.etat_disponible = true));
-					int nb_espace <- length(espace_dispo);
-					if (espace_dispo != []) {
-						loop i from: 0 to: nb_espace {
-							int j <- rnd(nb_espace - 1);
-							espace_de_stationnement element <- espace_dispo[j];
+					list freeSpace <- list(parkingSpace) where ((each.freeStatus = true));
+					int spaceNombere <- length(freeSpace);
+					if (freeSpace != []) {
+						loop i from: 0 to: spaceNombere {
+							int j <- rnd(spaceNombere - 1);
+							parkingSpace element <- freeSpace[j];
 							ask element {
-								if (surface >= myself.taille) {
-									myself.sa_destination <- element.location;
+								if (area >= myself.size) {
+									myself.isDestination <- element.location;
 									myself.waitingState <- false;
-									myself.etat_marcher <- true;
+									myself.walkingStatus <- true;
 								}
 
 							}
@@ -572,24 +572,24 @@ else {
 
 	//Cette action affecte les bateaux de secours aux différents bateaux qui n'ont pas pu accéder au port faute de l'etat basse de la
 	//marrée	       
-	reflex donner_affectation_offloaderBoat {
+	reflex offloaderBoatAffectaion {
 		
 	//Il communique avec tous les bateaux concernés       	
-		list waitBoatList <- list(bateau) where ((each.canReachPort = false) and (each.unloadingState = false));
-		int waitBoatNumber <- length(waitBoatList);
-		if (waitBoatList != []) {
-			loop i from: 0 to: waitBoatNumber {
-				int j <- rnd(waitBoatNumber - 1);
-				bateau eleme <- waitBoatList[j];
+		list waitingBoatList <- list(boat) where ((each.canReachPort = false) and (each.unloadingState = false));
+		int waitingBoatNomber <- length(waitingBoatList);
+		if (waitingBoatList != []) {
+			loop i from: 0 to: waitingBoatNomber {
+				int j <- rnd(waitingBoatNomber - 1);
+				boat eleme <- waitingBoatList[j];
 				ask eleme {
-					list tmp <- list(offloaderBoat) where ((each.etat_disponible = true));
-					int nb_ba <- length(tmp);
+					list tmp <- list(offloaderBoat) where ((each.freeStatus = true));
+					int boatNomber <- length(tmp);
 					if (tmp != []) {
 						offloaderBoat but <- first(tmp sort_by (self distance_to each));
 						ask but {
-							sa_destination <- eleme.location;
-							boatLoc <- eleme.location;
-							etat_marcher <- true;
+							isDestination <- eleme.location;
+							boatLocation <- eleme.location;
+							walkingStatus <- true;
 						}
 
 					}
@@ -604,24 +604,23 @@ else {
 
 }
 
-experiment Groupe3navigationport type: gui {
-	parameter "Changer le niveau de la marrée" category: "Niveau d'eau" var: etat <- "basse" among: ["basse", "haute"];
-	float minimum_cycle_duration <- 0.04;
+experiment groupe05NavigationDansUnPort type: gui {
+	parameter "Changer le niveau de la marrée" category: "Niveau d'eau" var: status <- "basse" among: ["basse", "haute"];
+	float cycleMinDuration <- 0.04;
 	output {
 		display map type: opengl {
 		image "../includes/fond_bleu.jpg";
 			graphics "layer2" transparency: 10 {
 			}
 
-			species centre_de_controle aspect: parabole;
-			species la_couche transparency: opacity;
+			species controlCenter aspect: parabole;
+			species layer transparency: opacity;
 			
-			species bateau aspect: icone;
-			species espace_de_stationnement;
-			species la_forme;
+			species boat aspect: icone;
+			species parkingSpace;
+			species boatShape;
 			species offloaderBoat;
-			graphics "sortie" refresh: false {
-
+			graphics "out" refresh: false {
 
 			}
 
