@@ -26,25 +26,25 @@ geometry freeSpace;
 // Définition de la taille du bateau
 float boatSize <- 2.0;
 // Définition des points d'entrée
-point entryPoint <- {800, 150};
-point entryPoint2 <- {500, 0};
-point entryPoint3 <- {800, 0};
+point entryPoint <- {300, 0};
+point entryPoint2 <- {150, 0};
+point entryPoint3 <- {240, 20};
 // Définition du point de sortie
-point out <- {800, 380};
+point out <- {100, 10};
 // Capacité du port
 int portCapacity <- 15;
 
 // Définition des points d'accostage pour les agents
-point dockingPoint <- {180, 40};
-point dockingPoint2 <- {170, 80};
-point dockingPoint3 <- {200, 150};
-point dockingPoint4 <- {173, 190};
-point dockingPoint5 <- {200, 230};
-point dockingPoint6 <- {205, 280};
-point dockingPoint7 <- {240, 302};
-point dockingPoint8 <- {280, 320};
-point dockingPoint9 <- {305, 355};
-point dockingPoint10 <- {350, 385};
+point dockingPoint <- {95, 40};
+point dockingPoint2 <- {455, 80};
+point dockingPoint3 <- {105, 150};
+point dockingPoint4 <- {570, 190};
+point dockingPoint5 <- {570, 230};
+point dockingPoint6 <- {110, 250};
+point dockingPoint7 <- {115, 302};
+point dockingPoint8 <- {700, 350};
+point dockingPoint9 <- {300, 375};
+point dockingPoint10 <- {350, 405};
 point dockingPoint11 <- {410, 390};
 point dockingPoint12 <- {500, 390};
 point dockingPoint13 <- {590, 395};
@@ -54,22 +54,22 @@ point dockingPoint15 <- {770, 400};
 // Définition des valeurs d'opacité
 float opacity;
 // Définition des valeurs de tonnage minimum et maximum
-float tonnageMin <- 10;
-float tonnageMax <- 40;
+float tonnageMin <- 5;
+float tonnageMax <- 60;
 // Définition des vitesses de chargement et déchargement pour les bateaux de catégorie "grand"
-float loadingSpeedGrand <- 3;
-float unloadingSpeedGrand <- 4;
+float loadingSpeedGrand <- 5;
+float unloadingSpeedGrand <- 7;
 // Définition des vitesses de chargement et déchargement pour les bateaux de catégorie "moyen"
-float loadingSpeedMoyen <- 2;
-float unloadingSpeedMoyen <- 2;
+float loadingSpeedMoyen <- 4;
+float unloadingSpeedMoyen <- 5;
 // Définition des vitesses de chargement et déchargement pour les bateaux de catégorie "petit"
-float loadingSpeedPetit <- 1;
-float unloadingSpeedPetit <- 1;
+float loadingSpeedPetit <- 2;
+float unloadingSpeedPetit <- 2;
 // Définition des vitesses de déplacement minimum et maximum
 float travelSpeedMin <- 1.0;
 float travelSpeedMax <- 6.0;
 // Définition des couleurs pour chaque catégorie de bateau
-float colorGrand <- rgb("green");
+//float colorGrand <- rgb("green");
 float colorMoyen <- rgb("blue");
 float colorPetit <- rgb("black");
 // Définition des statuts d'enregistrement du port
@@ -85,13 +85,13 @@ list<point> allDockingPoint <- [
 
 // Liste des statuts d'enregistrement du port
 list<bool> portRegistered <- [
-    true, true, true, false
-]; // Environ 75% true et 25% false
+    true, true, true, false,true,false,true,true,false
+]; // Environ 70% true et 30% false
 
 // Liste des catégories de bateaux
 list<string> boatCategory <- [
-    "petit", "moyen", "petit", "grand"
-]; // Environ 50% petits bateaux, 25% petits.B et 25% Grands.B
+    "petit", "moyen", "petit", "grand", "moyen"
+]; // Environ 40% petits bateaux, 40% bateaux moyen et 20% Grands bateaux
 
 // Statut actuel
 string status <- "basse";
@@ -117,8 +117,8 @@ string status <- "basse";
 				previousTonnage <- tonnage;
 				loadingSpeed <- loadingSpeedGrand;
 				unloadingSpeed <- unloadingSpeedGrand;
-				size <- 30;
-				color <- colorGrand;
+				size <- 40;
+				//color <- colorGrand;
 				travelSpeed <- rnd(travelSpeedMin, travelSpeedMax);
 				portRegistrationStatus <- portRegistrationStatusRegistered;
 			} else if (self.boatType = "moyen") {
@@ -126,7 +126,7 @@ string status <- "basse";
 				previousTonnage <- tonnage;
 				loadingSpeed <- loadingSpeedMoyen;
 				unloadingSpeed <- unloadingSpeedMoyen;
-				size <- 20;
+				size <- 25;
 				color <- colorMoyen;
 				travelSpeed <- rnd(travelSpeedMin, travelSpeedMax);
 				portRegistrationStatus <- one_of([portRegistrationStatusRegistered, portRegistrationStatusNotRegistered]);
@@ -148,7 +148,7 @@ string status <- "basse";
 
 		// Création du centre de controle
 		create controlCenter number: 1 {
-			location <- {190, 1};
+			location <- {95, 1};
 		}
 		//On crée un agent espace de stationnement sur chaque place d'acostage
 		loop i from: 0 to: portCapacity - 1 {
@@ -172,10 +172,7 @@ species boatShape {
 
 	aspect default {
 		draw shape color: #grey depth: height;
-		//draw le_sol  ;
-		//image "../includes/sol2.jpg";
-
-		//draw card size: size * 2;
+		
 	}
 
 }
@@ -240,12 +237,12 @@ species offloaderBoat skills: [moving] {
 				myself.color <- rgb("red");
 				tonnage <- tonnage - unloadingSpeed;
 
-				// Vérifie si le tonnage restant est supérieur à 0
+				// Vérification de marchandise dans le bateau
 				if (tonnage > 0) {
 					myself.isDestination <- isDestination;
 				}
 
-				// Vérifie si le tonnage restant est inférieur ou égal à 0
+				// Vérifions si le dechargement a pris fin
 				if (tonnage <= 0) {
 					myself.isDestination <- isDestination;
 					myself.freeStatus <- true;
@@ -271,7 +268,7 @@ species offloaderBoat skills: [moving] {
 	reflex returnToPort {
 	//C'est cette action qui va permettre à l'agent de faire le va et vient pendant le dechagement/loading
 	//Donc il se rapproche du bateau, il recupere la marchandise, puis il se dirige vers le port où le bateau devrait accoster.
-		if (freeStatus = false) {
+		if (!freeStatus) {
 			list tmpt <- list(parkingSpace) where ((each distance_to self) <= 0);
 			int nb_ <- length(tmpt);
 			if (tmpt != []) {
@@ -555,6 +552,90 @@ species controlCenter skills: [] {
 		draw satelliteDish size: size_ * 5;
 	}
 
+	
+	// Reflexe pour affecter des bateaux de secours aux bateaux ne pouvant pas accoster
+	reflex offloaderBoatAffectaion {
+	// Recherche des bateaux qui ne peuvent pas accéder au port faute de marée basse et qui ne déchargent pas
+		list waitingBoatList <- list(boat) where ((each.canReachPort = false) and (each.unloadingState = false));
+		int waitingBoatNomber <- length(waitingBoatList);
+
+		// Vérifie s'il y a des bateaux à affecter
+		if (waitingBoatList != []) {
+		// Traite chaque bateau concerné
+			loop i from: 0 to: waitingBoatNomber {
+				int j <- rnd(waitingBoatNomber - 1);
+				boat eleme <- waitingBoatList[j];
+				ask eleme {
+				// Recherche des bateaux déchargeurs disponibles
+					list tmp <- list(offloaderBoat) where ((each.freeStatus = true));
+					int boatNomber <- length(tmp);
+
+					// Vérifie s'il y a des bateaux déchargeurs disponibles
+					if (tmp != []) {
+						offloaderBoat but <- first(tmp sort_by (self distance_to each));
+						ask but {
+						// Affecte la position du bateau en attente au bateau déchargeur
+							isDestination <- eleme.location;
+							boatLocation <- eleme.location;
+							walkingStatus <- true;
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+	// Reflexe pour coordonner les bateaux en attente
+	reflex coordinateWaitingBoat {
+	// Recherche des bateaux en attente
+		list boatList <- list(boat) where ((each.waitingState = true));
+		int nb_b <- length(boatList);
+
+		// Vérifie s'il y a des bateaux en attente à traiter
+		if (boatList != []) {
+		// Traite chaque bateau en attente
+			loop i from: 0 to: nb_b {
+				int j <- rnd(nb_b - 1);
+				boat element <- boatList[j];
+				ask element {
+				// Recherche des places de parking disponibles
+					list freeSpace <- list(parkingSpace) where ((each.freeStatus = true));
+					int spaceNombere <- length(freeSpace);
+
+					// Vérifie s'il y a des places de parking disponibles
+					if (freeSpace != []) {
+						loop i from: 0 to: spaceNombere {
+							int j <- rnd(spaceNombere - 1);
+							parkingSpace element <- freeSpace[j];
+							ask element {
+							// Vérifie si la taille de la place correspond à la taille du bateau
+								if (area >= myself.size) {
+								// Affecte la place de parking au bateau
+									myself.isDestination <- element.location;
+									myself.waitingState <- false;
+									myself.walkingStatus <- true;
+								}
+
+							}
+
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+	}
+
+	
+	
 	// Reflexe pour autoriser l'accostage des bateaux
 	reflex boatLiftingAuthorizations {
 	// Recherche des bateaux qui attendent une autorisation d'accostage
@@ -614,90 +695,11 @@ species controlCenter skills: [] {
 		}
 
 	}
-
-	// Reflexe pour coordonner les bateaux en attente
-	reflex coordinateWaitingBoat {
-	// Recherche des bateaux en attente
-		list boatList <- list(boat) where ((each.waitingState = true));
-		int nb_b <- length(boatList);
-
-		// Vérifie s'il y a des bateaux en attente à traiter
-		if (boatList != []) {
-		// Traite chaque bateau en attente
-			loop i from: 0 to: nb_b {
-				int j <- rnd(nb_b - 1);
-				boat element <- boatList[j];
-				ask element {
-				// Recherche des places de parking disponibles
-					list freeSpace <- list(parkingSpace) where ((each.freeStatus = true));
-					int spaceNombere <- length(freeSpace);
-
-					// Vérifie s'il y a des places de parking disponibles
-					if (freeSpace != []) {
-						loop i from: 0 to: spaceNombere {
-							int j <- rnd(spaceNombere - 1);
-							parkingSpace element <- freeSpace[j];
-							ask element {
-							// Vérifie si la taille de la place correspond à la taille du bateau
-								if (area >= myself.size) {
-								// Affecte la place de parking au bateau
-									myself.isDestination <- element.location;
-									myself.waitingState <- false;
-									myself.walkingStatus <- true;
-								}
-
-							}
-
-						}
-
-					}
-
-				}
-
-			}
-
-		}
-
-	}
-
-	// Reflexe pour affecter des bateaux de secours aux bateaux ne pouvant pas accoster
-	reflex offloaderBoatAffectaion {
-	// Recherche des bateaux qui ne peuvent pas accéder au port faute de marée basse et qui ne déchargent pas
-		list waitingBoatList <- list(boat) where ((each.canReachPort = false) and (each.unloadingState = false));
-		int waitingBoatNomber <- length(waitingBoatList);
-
-		// Vérifie s'il y a des bateaux à affecter
-		if (waitingBoatList != []) {
-		// Traite chaque bateau concerné
-			loop i from: 0 to: waitingBoatNomber {
-				int j <- rnd(waitingBoatNomber - 1);
-				boat eleme <- waitingBoatList[j];
-				ask eleme {
-				// Recherche des bateaux déchargeurs disponibles
-					list tmp <- list(offloaderBoat) where ((each.freeStatus = true));
-					int boatNomber <- length(tmp);
-
-					// Vérifie s'il y a des bateaux déchargeurs disponibles
-					if (tmp != []) {
-						offloaderBoat but <- first(tmp sort_by (self distance_to each));
-						ask but {
-						// Affecte la position du bateau en attente au bateau déchargeur
-							isDestination <- eleme.location;
-							boatLocation <- eleme.location;
-							walkingStatus <- true;
-						}
-
-					}
-
-				}
-
-			}
-
-		}
-
-	}
+	
 
 }
+
+
 
 experiment groupe05NavigationDansUnPort type: gui {
 	parameter "Changer le niveau de la marrée" category: "Niveau d'eau" var: status <- "basse" among: ["basse", "haute"];
